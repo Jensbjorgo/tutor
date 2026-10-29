@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2937; --muted: #6b7280; --card: #f3f4f6;
+    --border: #d1d5db; --accent: #2563eb; --ok: #15803d; --bad: #b91c1c;
+    --ok-bg: #dcfce7; --bad-bg: #fee2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827; --fg: #e5e7eb; --muted: #9ca3af; --card: #1f2937;
+      --border: #374151; --accent: #60a5fa; --ok: #4ade80; --bad: #f87171;
+      --ok-bg: #14532d; --bad-bg: #7f1d1d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .progress { color: var(--muted); font-size: .9rem; margin-bottom: 16px; }
+  .bar { height: 6px; background: var(--card); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+  .bar > div { height: 100%; background: var(--accent); transition: width .2s; }
+  .question { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; white-space: pre-wrap; }
+  .options { display: grid; gap: 8px; }
+  button, input { font: inherit; color: inherit; }
+  .opt { text-align: left; padding: 12px 14px; background: var(--card);
+         border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt:disabled { cursor: default; }
+  .opt.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .numeric { display: flex; gap: 8px; }
+  .numeric input { flex: 1; padding: 10px 12px; background: var(--card);
+                   border: 1px solid var(--border); border-radius: 8px; }
+  .primary { padding: 10px 18px; background: var(--accent); color: var(--bg);
+             border: 0; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .feedback { margin-top: 16px; padding: 12px 14px; border-radius: 8px; border-left: 4px solid; }
+  .feedback.ok { border-color: var(--ok); background: var(--ok-bg); }
+  .feedback.bad { border-color: var(--bad); background: var(--bad-bg); }
+  .next { margin-top: 16px; }
+  .summary li { margin-bottom: 6px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title"></h1>
+  <div class="progress" id="progress"></div>
+  <div class="bar"><div id="bar-fill" style="width:0"></div></div>
+  <section id="quiz"></section>
+</main>
+<script>
+/*
+  Fyll inn QUIZ under. Spørsmålstyper:
+  - "choice":  options = [{ text, feedback }], answer = indeks til riktig alternativ (0-basert)
+               feedback på hvert alternativ forklarer hvorfor det er riktig/galt.
+  - "numeric": answer = tall, tolerance = tillatt avvik, explanation = forklaring.
+               Komma og punktum godtas som desimaltegn.
+  topic brukes i oppsummeringen for å vise hva som sitter og hva som bør repeteres.
+*/
+const QUIZ = {
+  title: "Poisson-fordeling",
+  questions: [
+    {
+      type: "choice",
+      topic: "Når Poisson passer",
+      question: "Hvilken situasjon passer best for en Poisson-fordeling?",
+      options: [
+        { text: "Antall kunder som kommer til en kafé i løpet av en time",
+          feedback: "Poisson teller hendelser i et fast intervall, når de skjer uavhengig med en jevn rate." },
+        { text: "Antall kron i 10 myntkast",
+          feedback: "Her er det et fast antall forsøk (10) med to utfall – det er binomisk, ikke Poisson." },
+        { text: "Høyden til en tilfeldig valgt student",
+          feedback: "Høyde er kontinuerlig. Poisson teller hele hendelser: 0, 1, 2, …" },
+        { text: "Antall røde kort når du trekker 5 kort fra en kortstokk",
+          feedback: "Trekk uten tilbakelegging fra en endelig bunke er hypergeometrisk." }
+      ],
+      answer: 0
+    },
+    {
+      type: "numeric",
+      topic: "Regne P(X = k)",
+      question: "Det kommer i snitt λ = 2 e-poster per time. Hva er P(X = 0), altså sannsynligheten for ingen e-poster neste time? Svar med 3 desimaler.",
+      answer: 0.135,
+      tolerance: 0.002,
+      explanation: "P(X = 0) = e^(−λ) · λ⁰ / 0! = e^(−2) ≈ 0,135. Merk at λ⁰ = 1 og 0! = 1, så bare e^(−λ) står igjen."
+    }
+  ]
+};
+
+const state = { i: 0, results: [] };
+const $ = (id) => document.getElementById(id);
+const el = (tag, props = {}, ...children) => {
+  const n = Object.assign(document.createElement(tag), props);
+  children.forEach((c) => n.append(c));
+  return n;
+};
+
+function render() {
+  const total = QUIZ.questions.length;
+  $("title").textContent = QUIZ.title;
+  $("bar-fill").style.width = (state.i / total * 100) + "%";
+  const root = $("quiz");
+  root.replaceChildren();
+  if (state.i >= total) return renderSummary(root);
+
+  const q = QUIZ.questions[state.i];
+  $("progress").textContent = `Spørsmål ${state.i + 1} av ${total}`;
+  root.append(el("div", { className: "question", textContent: q.question }));
+  const feedback = el("div", { className: "feedback hidden" });
+  const next = el("button", {
+    className: "primary next hidden",
+    textContent: state.i + 1 < total ? "Neste spørsmål" : "Se resultat",
+    onclick: () => { state.i++; render(); }
+  });
+
+  const finish = (correct, text) => {
+    state.results.push({ topic: q.topic || `Spørsmål ${state.i + 1}`, correct });
+    feedback.className = "feedback " + (correct ? "ok" : "bad");
+    feedback.textContent = (correct ? "Riktig. " : "Ikke helt. ") + text;
+    next.classList.remove("hidden");
+    next.focus();
+  };
+
+  if (q.type === "choice") {
+    const opts = el("div", { className: "options" });
+    q.options.forEach((o, idx) => {
+      const b = el("button", { className: "opt", textContent: `${"ABCDEFG"[idx]}) ${o.text}` });
+      b.onclick = () => {
+        [...opts.children].forEach((c, j) => {
+          c.disabled = true;
+          if (j === q.answer) c.classList.add("correct");
+        });
+        if (idx !== q.answer) b.classList.add("wrong");
+        const right = q.options[q.answer];
+        finish(idx === q.answer,
+          idx === q.answer ? o.feedback : `${o.feedback} Riktig svar: ${right.text}.`);
+      };
+      opts.append(b);
+    });
+    root.append(opts);
+  } else {
+    const input = el("input", { type: "text", inputMode: "decimal", placeholder: "Ditt svar" });
+    const submit = el("button", { className: "primary", textContent: "Svar" });
+    const check = () => {
+      const v = parseFloat(input.value.replace(",", "."));
+      if (Number.isNaN(v)) { input.focus(); return; }
+      input.disabled = submit.disabled = true;
+      const ok = Math.abs(v - q.answer) <= (q.tolerance ?? 0);
+      finish(ok, q.explanation);
+    };
+    submit.onclick = check;
+    input.onkeydown = (e) => { if (e.key === "Enter") check(); };
+    root.append(el("div", { className: "numeric" }, input, submit));
+    input.focus();
+  }
+  root.append(feedback, next);
+}
+
+function renderSummary(root) {
+  const score = state.results.filter((r) => r.correct).length;
+  $("progress").textContent = `Resultat: ${score} av ${state.results.length}`;
+  const list = (title, items) => items.length
+    ? [el("h2", { textContent: title }), el("ul", { className: "summary" },
+        ...items.map((r) => el("li", { textContent: r.topic })))]
+    : [];
+  root.append(
+    ...list("Det sitter", state.results.filter((r) => r.correct)),
+    ...list("Bør repeteres", state.results.filter((r) => !r.correct)),
+    el("button", { className: "primary", textContent: "Ta quizen på nytt",
+      onclick: () => { state.i = 0; state.results = []; render(); } })
+  );
+}
+
+render();
+</script>
+</body>
+</html>
