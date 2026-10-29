@@ -8,10 +8,13 @@ En [Agent Skill](https://agentskills.io) som gjør Claude til en bedre lærer. S
 
 og Claude vil
 
-- **lage en plan** og gå gjennom deltemaene ett for ett, i en rekkefølge der de bygger på hverandre
-- **forklare enkelt**: intuisjon og et konkret eksempel først, formelen etterpå, med hvert symbol forklart og typiske feil vist
+- **lage en plan** og gå gjennom deltemaene i **korte runder**, ett om gangen, med en kartlinje som viser hvor du er
+- **la deg gjette først**: hver runde starter med et lite problem du gjetter på før forklaringen kommer
+- **forklare enkelt**: korte setninger, intuisjon og et konkret eksempel først, formelen etterpå, med en «knagg» for hvert nytt begrep
+- **gi deg noe å gjøre** i hver runde: korte flervalgsspørsmål underveis, og du styrer tempoet selv («Videre», «Ett eksempel til», «Tegn det», «Jeg henger ikke med», «Jeg kan dette fra før»)
 - **illustrere** der en tegning faktisk hjelper: kurver med skravert areal, fordelinger, strukturer, og **animasjoner** du kan spille av steg for steg når temaet er en algoritme
-- **avslutte med en oppsummeringsquiz** som dekker alle deltemaene, med forklaring på hvert svar og resultat per deltema
+- **avslutte med en oppsummeringsquiz** som dekker alle deltemaene, med forklaring på hvert svar og resultat per deltema. Du kan alltid hoppe over et spørsmål
+- **hjelpe deg å huske**: huskeliste du kan lagre, repetisjonsspørsmål når du kommer tilbake til temaet, og en planlagt repetisjon et par dager senere hvis du vil
 
 Skillen er skrevet på norsk og vektlegger matematikk, statistikk og programmering, men fungerer for alle fag. Claude svarer på språket du skriver på, så den fungerer like godt på engelsk.
 
@@ -19,7 +22,7 @@ Skillen er skrevet på norsk og vektlegger matematikk, statistikk og programmeri
 
 | Du skriver | Claude gjør |
 |---|---|
-| «/tutor normalfordeling: standardisering, sannsynligheter, kvantiler, lineærkombinasjoner» | Gir en leksjon i fire deler med figurer av arealet under kurven, en huskeliste med formlene, og en quiz med minst ett spørsmål per del |
+| «/tutor normalfordeling: standardisering, sannsynligheter, kvantiler, lineærkombinasjoner» | Gir en leksjon i fire korte runder med gjett-spørsmål, figurer av arealet under kurven og flervalg underveis, så en huskeliste og en quiz med minst ett spørsmål per del |
 | «/tutor Dijkstras algoritme» | Forklarer ideen, lager en animasjon som viser hvordan avstandene oppdateres steg for steg, og quizzer deg til slutt |
 | «Forklar hypergeometrisk fordeling» | Starter med et kortstokk-eksempel, viser fordelingen som stolpediagram, forklarer N, K, n og k hver for seg, og viser forskjellen fra binomisk fordeling |
 | «Jeg skjønner ikke derivasjon» | Sjekker nivået ditt, forklarer derivert som stigning og som fart, og spør et kontrollspørsmål før neste trinn |
@@ -35,8 +38,9 @@ Skillen trigges ikke på korte faktaspørsmål («hva er hovedstaden i Peru?») 
 tutor/
 ├── SKILL.md                    # Hovedinstruksjoner: pedagogikk og arbeidsflyt
 ├── references/
-│   ├── visuals.md              # Når og hvordan lage illustrasjoner, med eksempler
-│   └── quizzing.md             # Spørsmålstyper, distraktorer, tilbakemelding, oppsummering
+│   ├── runder.md               # Korte runder: kartlinje, gjett, knagger, tempo, eksempel på en runde
+│   ├── visuals.md              # Illustrasjoner, animasjoner og fargekode
+│   └── quizzing.md             # Spørsmål underveis, quiz, tilbakemelding, repetisjon over tid
 └── assets/
     ├── quiz-template.html      # Interaktiv quiz med resultat per deltema (norsk/engelsk, lys/mørk modus)
     └── animation-template.html # Steg-for-steg-animasjon av algoritmer (eksempel: boblesortering)

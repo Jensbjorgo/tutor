@@ -42,6 +42,10 @@
   .feedback { margin-top: 16px; padding: 12px 14px; border-radius: 8px; border-left: 4px solid; }
   .feedback.ok { border-color: var(--ok); background: var(--ok-bg); }
   .feedback.bad { border-color: var(--bad); background: var(--bad-bg); }
+  .feedback.skip { border-color: var(--muted); background: var(--card); }
+  .skip { margin-top: 12px; padding: 8px 14px; background: none; color: var(--muted);
+          border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+  .skip:hover { color: var(--fg); border-color: var(--fg); }
   .next { margin-top: 16px; }
   .summary li { margin-bottom: 6px; }
   .hidden { display: none; }
@@ -62,6 +66,8 @@
   - "numeric": answer = tall, tolerance = tillatt avvik, explanation = forklaring.
                Komma og punktum godtas som desimaltegn.
   topic brukes i oppsummeringen for å vise hva som sitter og hva som bør repeteres.
+  Alle spørsmål har en «Hopp over»-knapp. Den viser riktig svar med forklaring, og deltemaet
+  havner under «Bør repeteres».
   Bruk ett topic per deltema i leksjonen, så oppsummeringen viser resultat per deltema.
   lang: "no" eller "en" styrer knappetekstene. Skriv spørsmålene på samme språk.
 */
@@ -99,10 +105,12 @@ const QUIZ = {
 const UI = {
   no: { q: "Spørsmål", of: "av", next: "Neste spørsmål", result: "Se resultat", ok: "Riktig.",
         bad: "Ikke helt.", right: "Riktig svar:", placeholder: "Ditt svar", answer: "Svar",
-        score: "Resultat", good: "Det sitter", review: "Bør repeteres", again: "Ta quizen på nytt" },
+        score: "Resultat", good: "Det sitter", review: "Bør repeteres", again: "Ta quizen på nytt",
+        skip: "Hopp over", skipped: "Hoppet over.", nSkipped: "hoppet over" },
   en: { q: "Question", of: "of", next: "Next question", result: "See result", ok: "Correct.",
         bad: "Not quite.", right: "Correct answer:", placeholder: "Your answer", answer: "Answer",
-        score: "Score", good: "You've got this", review: "Worth reviewing", again: "Retake the quiz" },
+        score: "Score", good: "You've got this", review: "Worth reviewing", again: "Retake the quiz",
+        skip: "Skip", skipped: "Skipped.", nSkipped: "skipped" },
 }[QUIZ.lang] || {};
 document.documentElement.lang = QUIZ.lang;
 document.title = QUIZ.title;
@@ -133,10 +141,12 @@ function render() {
     onclick: () => { state.i++; render(); }
   });
 
-  const finish = (correct, text) => {
-    state.results.push({ topic: q.topic || `${UI.q} ${state.i + 1}`, correct });
-    feedback.className = "feedback " + (correct ? "ok" : "bad");
-    feedback.textContent = (correct ? UI.ok : UI.bad) + " " + text;
+  const skip = el("button", { className: "skip", textContent: UI.skip });
+  const finish = (correct, text, skipped = false) => {
+    state.results.push({ topic: q.topic || `${UI.q} ${state.i + 1}`, correct, skipped });
+    feedback.className = "feedback " + (skipped ? "skip" : correct ? "ok" : "bad");
+    feedback.textContent = (skipped ? UI.skipped : correct ? UI.ok : UI.bad) + " " + text;
+    skip.classList.add("hidden");
     next.classList.remove("hidden");
     next.focus();
   };
@@ -157,6 +167,14 @@ function render() {
       };
       opts.append(b);
     });
+    skip.onclick = () => {
+      [...opts.children].forEach((c, j) => {
+        c.disabled = true;
+        if (j === q.answer) c.classList.add("correct");
+      });
+      const right = q.options[q.answer];
+      finish(false, `${UI.right} ${right.text}. ${right.feedback}`, true);
+    };
     root.append(opts);
   } else {
     const input = el("input", { type: "text", inputMode: "decimal", placeholder: UI.placeholder });
@@ -170,26 +188,34 @@ function render() {
     };
     submit.onclick = check;
     input.onkeydown = (e) => { if (e.key === "Enter") check(); };
+    skip.onclick = () => {
+      input.disabled = submit.disabled = true;
+      finish(false, `${UI.right} ${String(q.answer).replace(".", QUIZ.lang === "no" ? "," : ".")}. ${q.explanation}`, true);
+    };
     root.append(el("div", { className: "numeric" }, input, submit));
     input.focus();
   }
-  root.append(feedback, next);
+  root.append(skip, feedback, next);
 }
 
 function renderSummary(root) {
   const score = state.results.filter((r) => r.correct).length;
-  $("progress").textContent = `${UI.score}: ${score} ${UI.of} ${state.results.length}`;
+  const skipped = state.results.filter((r) => r.skipped).length;
+  $("progress").textContent = `${UI.score}: ${score} ${UI.of} ${state.results.length}`
+    + (skipped ? ` · ${skipped} ${UI.nSkipped}` : "");
   // Slå sammen per deltema: et tema sitter bare hvis alle spørsmålene om det var riktige.
+  // Et spørsmål som er hoppet over, teller som ikke riktig.
   const topics = new Map();
   state.results.forEach((r) => {
-    const t = topics.get(r.topic) || { right: 0, total: 0 };
-    t.total++; if (r.correct) t.right++;
+    const t = topics.get(r.topic) || { right: 0, total: 0, skipped: 0 };
+    t.total++; if (r.correct) t.right++; if (r.skipped) t.skipped++;
     topics.set(r.topic, t);
   });
   const entries = [...topics].map(([topic, t]) => ({ topic, ...t }));
   const list = (title, items) => items.length
     ? [el("h2", { textContent: title }), el("ul", { className: "summary" },
-        ...items.map((t) => el("li", { textContent: `${t.topic} (${t.right}/${t.total})` })))]
+        ...items.map((t) => el("li", { textContent: `${t.topic} (${t.right}/${t.total}`
+          + (t.skipped ? `, ${t.skipped} ${UI.nSkipped})` : ")") })))]
     : [];
   root.append(
     ...list(UI.good, entries.filter((t) => t.right === t.total)),

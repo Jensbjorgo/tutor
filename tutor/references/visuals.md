@@ -4,9 +4,10 @@
 1. Når en illustrasjon hjelper
 2. Velg verktøy
 3. Stilregler
-4. Animasjoner for algoritmer og prosesser
-5. Kontinuerlige fordelinger
-6. Eksempler
+4. Farger og visuell struktur
+5. Animasjoner for algoritmer og prosesser
+6. Kontinuerlige fordelinger
+7. Eksempler
 
 ## 1. Når en illustrasjon hjelper
 
@@ -14,10 +15,10 @@ Lag en illustrasjon når den viser noe som er tungt å holde i hodet fra tekst a
 
 | Type | Eksempler | Passende form |
 |---|---|---|
-| Algoritme | sortering, søk, grafsøk (BFS/DFS), Dijkstra, dynamisk programmering | animasjon som kan spilles av steg for steg (se del 4) |
+| Algoritme | sortering, søk, grafsøk (BFS/DFS), Dijkstra, dynamisk programmering | animasjon som kan spilles av steg for steg (se del 5) |
 | Prosess / flyt | beslutningstre, kall-stakk ved rekursjon | flytskjema, trinnvise tilstander |
 | Struktur | datastrukturer, minne, nettverk, mengder | bokser og piler, Venn-diagram |
-| Fordelinger | sannsynlighetsfordelinger, histogrammer | stolpediagram (diskret), kurve med skravert areal (kontinuerlig, se del 5) |
+| Fordelinger | sannsynlighetsfordelinger, histogrammer | stolpediagram (diskret), kurve med skravert areal (kontinuerlig, se del 6) |
 | Geometri | derivert som stigning, integral som areal, vektorer | koordinatsystem med markerte elementer |
 | Sammenligning | med/uten tilbakelegging, O(n) mot O(n²) | to figurer side om side på samme skala |
 
@@ -35,13 +36,50 @@ Gå nedover listen og bruk det første som er tilgjengelig:
 ## 3. Stilregler
 
 - **Tydelige etiketter.** Navngi akser, enheter og alle viktige elementer direkte i figuren. Bruk de samme symbolene som i forklaringen (står det `k` i teksten, står det `k` på aksen).
-- **Få farger.** Én nøytral farge for det meste og én fremhevingsfarge for det figuren handler om (f.eks. stolpen for P(X = 2)). Maks 3–4 farger totalt. Ikke la farge være eneste skille; bruk også etikett eller mønster.
+- **Få farger.** Én nøytral farge for det meste og én fremhevingsfarge for det figuren handler om (f.eks. stolpen for P(X = 2)). Maks 3–4 farger totalt. Ikke la farge være eneste skille; bruk også etikett eller mønster. Følg fargekoden i del 4, så samme størrelse har samme farge i alle figurene.
+- **Én figur per melding.** I leksjonsmodus hører figuren til forklaringen i melding 2 (se [runder.md](runder.md)). «Tegn det» gir én ny figur av det samme.
 - **Lesbart i lys og mørk modus.** I SVG/HTML: bruk `currentColor` for tekst og linjer, eller CSS-variabler med `@media (prefers-color-scheme: dark)`. Velg fremhevingsfarger med god kontrast mot både hvit og mørk bakgrunn (mellomtoner som `#3b82f6` eller `#e8590c`).
 - **Ingen pynt.** Ingen 3D, skygger, gradienter, ikoner eller bakgrunnsbilder som ikke forklarer noe. Hvert element skal ha en jobb.
 - **Tittel som sier poenget.** «Flest utfall rundt forventningsverdien 1,6» lærer mer bort enn «Fordeling».
 - **Forklar figuren i teksten.** Si i én–to setninger hva brukeren skal legge merke til.
 
-## 4. Animasjoner for algoritmer og prosesser
+## 4. Farger og visuell struktur
+
+Farger skal hjelpe brukeren å skille ting, og de skal bety det samme gjennom hele leksjonen.
+
+### Blokker i teksten
+
+Hver type blokk har et fast ikon og en fast farge. I chat er ikonet fargen; i HTML og artifacts brukes fargen som venstrekant og svak bakgrunn.
+
+| Blokk | Ikon | Lys | Mørk |
+|---|---|---|---|
+| Krok / gjett | 🎯 | `#a16207` | `#facc15` |
+| Knagg (nytt begrep) | 🧩 | `#7c3aed` | `#a78bfa` |
+| Formel | 📐 | `#0f766e` | `#2dd4bf` |
+| Vanlig feil | ⚠️ | `#b91c1c` | `#f87171` |
+| Nå kan du | ✅ | `#15803d` | `#4ade80` |
+
+Skriv blokkene som en uthevet overskrift med ikonet først: `🧩 **z-verdi** = …`. Bruk ikke ikonene til pynt andre steder, så de beholder betydningen.
+
+### Variabler
+
+Gi hver sentral størrelse én farge i første runde, og hold den gjennom hele leksjonen, i tekst og figur:
+
+| Størrelse | Farge (lys / mørk) |
+|---|---|
+| μ, forventning, snitt | blå `#2563eb` / `#60a5fa` |
+| σ, standardavvik, spredning | oransje `#e8590c` / `#fb923c` |
+| z, standardisert verdi | rosa `#c026d3` / `#e879f9` |
+| sannsynlighet, skravert areal | blå skravering med 25–35 % dekkevne |
+
+For andre temaer: velg 2–3 størrelser som går igjen, og gi dem fargene over i samme rekkefølge (den viktigste blå, den nest viktigste oransje).
+
+- **I figurer:** tegn μ-linjen blå og σ-avstanden oransje, og skriv symbolet i samme farge.
+- **I tekst:** der miljøet viser LaTeX med farger, skriv `\textcolor{#2563eb}{\mu}`. Ellers står symbolet i vanlig tekst; fargen i figuren gjør jobben.
+- **Rolle før pynt:** én figur har fortsatt maks 3–4 farger (se stilreglene). Variabelfargene teller med.
+- **Ikke la farge være eneste skille.** Symbolet eller etiketten skal alltid stå der også.
+
+## 5. Animasjoner for algoritmer og prosesser
 
 En algoritme er en serie tilstander. En animasjon lar brukeren se hver tilstand og hva som endret seg, i eget tempo. Lag en når temaet er en algoritme eller en prosess med mange like steg (sortering, binærsøk, BFS/DFS, Dijkstra, fylling av en DP-tabell, push/pop på en stakk).
 
@@ -57,7 +95,7 @@ Vis animasjonen som artifact der miljøet har det; ellers lagre den som `.html` 
 
 En animasjon passer ikke når tilstanden ikke endrer seg trinnvis (en formel, en definisjon), eller når det bare er 2–3 steg; da holder det med figurer side om side.
 
-## 5. Kontinuerlige fordelinger
+## 6. Kontinuerlige fordelinger
 
 For normalfordeling, t-fordeling, eksponentialfordeling o.l. er sannsynlighet *areal under kurven*. Figuren skal vise det arealet.
 
@@ -68,7 +106,7 @@ For normalfordeling, t-fordeling, eksponentialfordeling o.l. er sannsynlighet *a
 - **Regn punktene med kode**, ikke tegn kurven på øyemål. I HTML: regn tettheten i JavaScript og tegn en `<path>`. I Python: matplotlib med `fill_between`.
 - En glidebryter for μ og σ (eller for grensen a) er verdt det når poenget er hvordan arealet endrer seg.
 
-## 6. Eksempler
+## 7. Eksempler
 
 ### Eksempel A: Sannsynlighetsfordeling som stolpediagram (SVG)
 
