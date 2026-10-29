@@ -11,10 +11,19 @@
 
 ## 1. Når og hvordan starte
 
-- Tilby en quiz etter en forklaring: «Vil du teste deg selv med 5 korte spørsmål?» Ikke start uten at brukeren sier ja.
+- **Etter en leksjon** (se Leksjonsmodus i SKILL.md): start oppsummeringsquizen direkte, uten å spørre. Se under.
+- **Etter en forklaring i samtale**: tilby en quiz («Vil du teste deg selv med 5 korte spørsmål?»). Ikke start uten at brukeren sier ja.
 - Ber brukeren om en quiz, start direkte. Mangler tema eller nivå, still ett spørsmål om det, ellers anta ut fra samtalen.
 - Standard er **5 spørsmål**. Brukeren kan be om flere eller færre.
 - Si kort hva quizen dekker før første spørsmål («5 spørsmål om Poisson-fordeling, fra lett til litt vanskeligere»).
+
+### Oppsummeringsquiz etter en leksjon
+
+- Minst ett spørsmål per deltema, og minst ett spørsmål som kombinerer deltemaer (f.eks. «Finn P(X + Y > 100)», som krever både lineærkombinasjon og standardisering). Typisk 6–8 spørsmål totalt.
+- Gå fra lett til vanskelig og følg rekkefølgen i leksjonen.
+- Bruk andre tall og situasjoner enn i forklaringen, så brukeren må bruke metoden og ikke bare huske svaret.
+- Gi hvert spørsmål `topic` lik navnet på deltemaet, så oppsummeringen viser hvilke deltemaer som sitter.
+- Regn ut alle fasitsvar med kode før du viser quizen, når du har kodekjøring.
 
 ## 2. Format og verktøy
 
@@ -24,7 +33,9 @@ Velg format i denne rekkefølgen:
 
 1. **Innebygd verktøy for spørsmål/valg**, hvis miljøet har det (f.eks. `AskUserQuestion` i Claude Code eller valgknapper i Claude.ai). Passer godt for flervalg. Åpne spørsmål stilles i vanlig chat.
 2. **Chat.** Fungerer overalt. Nummerer flervalgsalternativer A–D, så brukeren kan svare med én bokstav.
-3. **HTML-malen** i `assets/quiz-template.html`, når brukeren vil øve på egen hånd, ha en quiz å ta med seg eller dele, eller ber om en interaktiv quiz. Kopier malen, fyll inn `QUIZ`-objektet øverst i skriptet, og lagre filen (eller vis den som artifact der det finnes). Malen støtter flervalg og tallsvar; åpne «forklar med egne ord»-spørsmål passer bedre i chat.
+3. **HTML-malen** i `assets/quiz-template.html`, når brukeren vil øve på egen hånd, ha en quiz å ta med seg eller dele, eller ber om en interaktiv quiz. Kopier malen, fyll inn `QUIZ`-objektet øverst i skriptet (med `lang: "en"` for engelsk), og lagre filen (eller vis den som artifact der det finnes). Malen støtter flervalg og tallsvar; åpne «forklar med egne ord»-spørsmål passer bedre i chat.
+
+For oppsummeringsquizen etter en leksjon: der miljøet viser artifacts (som Claude.ai), bruk HTML-malen som artifact, så brukeren får en interaktiv quiz med resultat per deltema. Ellers (f.eks. i en terminal) still spørsmålene ett om gangen med punkt 1 eller 2, og tilby HTML-filen til slutt for videre øving.
 
 ## 3. Spørsmålstyper
 

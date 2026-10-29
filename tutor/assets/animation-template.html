@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algoritme-animasjon</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2937; --muted: #6b7280; --card: #f3f4f6;
+    --border: #d1d5db; --bar: #9ca3af; --active: #2563eb; --swap: #e8590c; --done: #15803d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827; --fg: #e5e7eb; --muted: #9ca3af; --card: #1f2937;
+      --border: #374151; --bar: #6b7280; --active: #60a5fa; --swap: #fb923c; --done: #4ade80;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .stage { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--fg); font-size: 14px; }
+  svg .idx { fill: var(--muted); font-size: 12px; }
+  .item { transition: transform .35s ease; }
+  .item rect { fill: var(--bar); transition: fill .2s, height .35s, y .35s; }
+  .item.active rect { fill: var(--active); }
+  .item.swap rect { fill: var(--swap); }
+  .item.done rect { fill: var(--done); }
+  @media (prefers-reduced-motion: reduce) { .item, .item rect { transition: none; } }
+  .note { min-height: 3em; margin: 12px 0; font-size: 1.05rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .code { flex: 1 1 280px; margin: 0; padding: 10px 0; background: var(--card);
+          border: 1px solid var(--border); border-radius: 10px; font: 14px/1.6 ui-monospace, monospace; }
+  .code div { padding: 0 12px; white-space: pre; border-left: 3px solid transparent; }
+  .code div.on { border-left-color: var(--active); background: color-mix(in srgb, var(--active) 18%, transparent); }
+  .legend { flex: 0 1 200px; display: grid; gap: 6px; font-size: .9rem; }
+  .legend span { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
+  button { font: inherit; color: var(--fg); background: var(--card); border: 1px solid var(--border);
+           border-radius: 8px; padding: 8px 12px; cursor: pointer; min-width: 44px; }
+  button:hover { border-color: var(--active); }
+  button.primary { background: var(--active); color: var(--bg); border-color: var(--active); font-weight: 600; }
+  .counter { color: var(--muted); font-size: .9rem; margin-left: auto; }
+  label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title"></h1>
+  <p class="sub" id="subtitle"></p>
+  <div class="stage"><svg id="svg" viewBox="0 0 600 260" role="img"></svg></div>
+  <div class="note" id="note" aria-live="polite"></div>
+  <div class="row">
+    <div class="code" id="code"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+  <div class="controls">
+    <button id="first">⏮</button>
+    <button id="prev">◀</button>
+    <button id="play" class="primary"></button>
+    <button id="next">▶</button>
+    <button id="last">⏭</button>
+    <label><span id="speed-label"></span> <input id="speed" type="range" min="1" max="5" value="3"></label>
+    <span class="counter" id="counter"></span>
+  </div>
+</main>
+<script>
+/*
+  Tilpass ANIM under. Kontrollene (spill av, steg frem/tilbake, fart, tastatur) virker for alle algoritmer.
+  - lang:   "no" eller "en" – styrer knappetekstene.
+  - code:   pseudokode eller ekte kode, én linje per element. Steget markerer linjen i step.line.
+  - legend: forklaring på fargene. Rollenavnene (active, swap, done) må finnes i CSS-en over.
+  - buildSteps(): kjør algoritmen og ta et øyeblikksbilde (snap) for hvert steg som er verdt å se.
+            Hvert steg: { items: [{ id, v }], marks: { indeks: rolle }, line, note }.
+            note er setningen brukeren leser – skriv den på brukerens språk og med konkrete tall.
+  - draw(): tegner ett steg. Standard er stolper for en liste (sortering, søk, to-pekere).
+            For grafer, trær, stakker eller rutenett: bytt ut draw() og formen på stegene,
+            men behold samme mønster med ett øyeblikksbilde per steg.
+*/
+const ANIM = {
+  lang: "no",
+  title: "Boblesortering",
+  subtitle: "Store tall «bobler» bakover: etter hver runde står det største gjenværende tallet på riktig plass.",
+  code: [
+    "for slutt = n − 1 ned til 1:",
+    "    for i = 0 til slutt − 1:",
+    "        hvis a[i] > a[i + 1]:",
+    "            bytt a[i] og a[i + 1]",
+    "    a[slutt] står nå på riktig plass",
+  ],
+  legend: [
+    ["active", "sammenlignes"],
+    ["swap", "bytter plass"],
+    ["done", "ferdig plassert"],
+  ],
+  buildSteps() {
+    const a = [5, 2, 8, 1, 9, 3].map((v, id) => ({ id, v }));
+    const steps = [];
+    let sortedFrom = a.length;
+    const sorted = () => {
+      const m = {};
+      for (let k = sortedFrom; k < a.length; k++) m[k] = "done";
+      return m;
+    };
+    const snap = (line, note, marks = {}) =>
+      steps.push({ items: a.map((x) => ({ ...x })), marks: { ...sorted(), ...marks }, line, note });
+
+    snap(-1, `Start: [${a.map((x) => x.v).join(", ")}]. Vi sammenligner naboer og bytter dem hvis de står feil.`);
+    for (let end = a.length - 1; end > 0; end--) {
+      for (let i = 0; i < end; i++) {
+        const [x, y] = [a[i].v, a[i + 1].v];
+        snap(2, `Sammenlign ${x} og ${y}.` + (x > y ? "" : ` ${x} ≤ ${y}, så de står riktig.`),
+             { [i]: "active", [i + 1]: "active" });
+        if (x > y) {
+          [a[i], a[i + 1]] = [a[i + 1], a[i]];
+          snap(3, `${x} > ${y}, så de bytter plass.`, { [i]: "swap", [i + 1]: "swap" });
+        }
+      }
+      sortedFrom = end;
+      snap(4, `Runde ferdig: ${a[end].v} er det største av de gjenværende og står nå på plass.`);
+    }
+    sortedFrom = 0;
+    snap(-1, `Ferdig: [${a.map((x) => x.v).join(", ")}]. Med n = ${a.length} tall trengte vi opptil n − 1 runder.`);
+    return steps;
+  },
+  draw(svg, step) {
+    const W = 600, H = 260, pad = 30, base = H - 40;
+    const n = step.items.length, slot = (W - 2 * pad) / n, bw = slot * 0.7;
+    const max = Math.max(...step.items.map((x) => x.v));
+    if (!svg.dataset.ready) {
+      // Lag én gruppe per element så de kan gli til ny plass når de bytter.
+      step.items.forEach((x) => {
+        const g = document.createElementNS(svg.namespaceURI, "g");
+        g.classList.add("item");
+        g.dataset.id = x.id;
+        g.innerHTML = `<rect x="0" width="${bw}" rx="4"></rect><text text-anchor="middle" x="${bw / 2}"></text>`;
+        svg.append(g);
+      });
+      for (let i = 0; i < n; i++) {
+        svg.insertAdjacentHTML("beforeend",
+          `<text class="idx" text-anchor="middle" x="${pad + i * slot + slot / 2}" y="${H - 14}">${i}</text>`);
+      }
+      svg.dataset.ready = "1";
+    }
+    step.items.forEach((x, i) => {
+      const g = svg.querySelector(`.item[data-id="${x.id}"]`);
+      const h = (x.v / max) * (base - 40);
+      g.style.transform = `translate(${pad + i * slot + (slot - bw) / 2}px, 0)`;
+      g.setAttribute("class", "item " + (step.marks[i] || ""));
+      const r = g.querySelector("rect");
+      r.setAttribute("y", base - h);
+      r.setAttribute("height", h);
+      const t = g.querySelector("text");
+      t.setAttribute("y", base - h - 8);
+      t.textContent = x.v;
+    });
+  },
+};
+
+const UI = {
+  no: { play: "▶ Spill av", pause: "⏸ Pause", speed: "Fart", step: "Steg" },
+  en: { play: "▶ Play", pause: "⏸ Pause", speed: "Speed", step: "Step" },
+}[ANIM.lang] || {};
+
+const $ = (id) => document.getElementById(id);
+const steps = ANIM.buildSteps();
+let i = 0, timer = null;
+
+document.documentElement.lang = ANIM.lang;
+document.title = ANIM.title;
+$("title").textContent = ANIM.title;
+$("subtitle").textContent = ANIM.subtitle || "";
+$("speed-label").textContent = UI.speed;
+$("code").replaceChildren(...ANIM.code.map((line) => Object.assign(document.createElement("div"), { textContent: line })));
+$("legend").replaceChildren(...ANIM.legend.map(([role, text]) => {
+  const d = document.createElement("div");
+  d.innerHTML = `<span style="background: var(--${role})"></span>`;
+  d.append(text);
+  return d;
+}));
+
+function show(k) {
+  i = Math.max(0, Math.min(steps.length - 1, k));
+  const s = steps[i];
+  ANIM.draw($("svg"), s);
+  $("note").textContent = s.note;
+  [...$("code").children].forEach((d, j) => d.classList.toggle("on", j === s.line));
+  $("counter").textContent = `${UI.step} ${i + 1} / ${steps.length}`;
+  if (i === steps.length - 1) stop();
+}
+function stop() { clearInterval(timer); timer = null; $("play").textContent = UI.play; }
+function play() {
+  if (i === steps.length - 1) show(0);
+  $("play").textContent = UI.pause;
+  timer = setInterval(() => show(i + 1), 2200 / $("speed").value);
+}
+const toggle = () => (timer ? stop() : play());
+
+$("play").onclick = toggle;
+$("first").onclick = () => { stop(); show(0); };
+$("prev").onclick = () => { stop(); show(i - 1); };
+$("next").onclick = () => { stop(); show(i + 1); };
+$("last").onclick = () => { stop(); show(steps.length - 1); };
+$("speed").oninput = () => { if (timer) { stop(); play(); } };
+document.addEventListener("keydown", (e) => {
+  if (e.key === " ") { e.preventDefault(); toggle(); }
+  if (e.key === "ArrowRight") { stop(); show(i + 1); }
+  if (e.key === "ArrowLeft") { stop(); show(i - 1); }
+});
+
+stop();
+show(0);
+</script>
+</body>
+</html>

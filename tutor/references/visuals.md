@@ -4,7 +4,9 @@
 1. Når en illustrasjon hjelper
 2. Velg verktøy
 3. Stilregler
-4. Eksempler
+4. Animasjoner for algoritmer og prosesser
+5. Kontinuerlige fordelinger
+6. Eksempler
 
 ## 1. Når en illustrasjon hjelper
 
@@ -12,9 +14,10 @@ Lag en illustrasjon når den viser noe som er tungt å holde i hodet fra tekst a
 
 | Type | Eksempler | Passende form |
 |---|---|---|
-| Prosess / flyt | algoritme, beslutningstre, kall-stakk ved rekursjon | flytskjema, trinnvise tilstander |
+| Algoritme | sortering, søk, grafsøk (BFS/DFS), Dijkstra, dynamisk programmering | animasjon som kan spilles av steg for steg (se del 4) |
+| Prosess / flyt | beslutningstre, kall-stakk ved rekursjon | flytskjema, trinnvise tilstander |
 | Struktur | datastrukturer, minne, nettverk, mengder | bokser og piler, Venn-diagram |
-| Fordelinger | sannsynlighetsfordelinger, histogrammer | stolpediagram (diskret), kurve (kontinuerlig) |
+| Fordelinger | sannsynlighetsfordelinger, histogrammer | stolpediagram (diskret), kurve med skravert areal (kontinuerlig, se del 5) |
 | Geometri | derivert som stigning, integral som areal, vektorer | koordinatsystem med markerte elementer |
 | Sammenligning | med/uten tilbakelegging, O(n) mot O(n²) | to figurer side om side på samme skala |
 
@@ -38,7 +41,34 @@ Gå nedover listen og bruk det første som er tilgjengelig:
 - **Tittel som sier poenget.** «Flest utfall rundt forventningsverdien 1,6» lærer mer bort enn «Fordeling».
 - **Forklar figuren i teksten.** Si i én–to setninger hva brukeren skal legge merke til.
 
-## 4. Eksempler
+## 4. Animasjoner for algoritmer og prosesser
+
+En algoritme er en serie tilstander. En animasjon lar brukeren se hver tilstand og hva som endret seg, i eget tempo. Lag en når temaet er en algoritme eller en prosess med mange like steg (sortering, binærsøk, BFS/DFS, Dijkstra, fylling av en DP-tabell, push/pop på en stakk).
+
+Bruk [assets/animation-template.html](../assets/animation-template.html). Den har avspilling, steg frem og tilbake, fart, tastatur (mellomrom, piltaster), kodelinjen som kjøres markert, og en setning som forklarer hvert steg. Eksempelet i malen er boblesortering.
+
+1. Kopier malen og fyll inn `ANIM`: tittel, `lang`, koden eller pseudokoden, og fargeforklaringen.
+2. Skriv `buildSteps()` slik at den **kjører algoritmen på ekte** og tar et øyeblikksbilde per steg. Da blir stegene riktige, og du slipper å regne dem ut for hånd.
+3. Gjelder det en liste (sortering, søk, to-pekere), behold `draw()`. For grafer, trær, rutenett eller stakker: skriv ny `draw()` med noder og kanter i SVG, og bruk de samme rollene (`active`, `swap`, `done`) eller legg til nye i CSS-en.
+4. Bruk et lite eksempel (5–8 elementer, 5–7 noder). Det blir 15–40 steg, som er nok til å se mønsteret uten å kjede seg.
+5. Hver `note` skal si hva som skjer *og hvorfor*, med de faktiske tallene: «Sammenlign 8 og 1. 8 > 1, så de bytter plass.»
+
+Vis animasjonen som artifact der miljøet har det; ellers lagre den som `.html` og si at den kan åpnes i nettleseren. Spor også de 2–3 første stegene i teksten, så forklaringen gir mening uten animasjonen.
+
+En animasjon passer ikke når tilstanden ikke endrer seg trinnvis (en formel, en definisjon), eller når det bare er 2–3 steg; da holder det med figurer side om side.
+
+## 5. Kontinuerlige fordelinger
+
+For normalfordeling, t-fordeling, eksponentialfordeling o.l. er sannsynlighet *areal under kurven*. Figuren skal vise det arealet.
+
+- Tegn tetthetskurven og skraver arealet spørsmålet gjelder: P(X ≤ a), P(a < X < b) eller halene. Skriv sannsynligheten inne i eller ved arealet.
+- Merk viktige punkter på x-aksen med begge skalaer når det handler om standardisering: `x = 180` over `z = 1,5`, og `μ` over `0`.
+- For kvantiler: skraver arealet p og pek på grensen med «kvantilen = ?». Det viser at man går fra areal til verdi, motsatt vei av å finne en sannsynlighet.
+- For lineærkombinasjoner (X + Y, X − Y, gjennomsnitt): tegn fordelingene på samme akse, så brukeren ser at forventningen flytter seg og at spredningen endrer seg.
+- **Regn punktene med kode**, ikke tegn kurven på øyemål. I HTML: regn tettheten i JavaScript og tegn en `<path>`. I Python: matplotlib med `fill_between`.
+- En glidebryter for μ og σ (eller for grensen a) er verdt det når poenget er hvordan arealet endrer seg.
+
+## 6. Eksempler
 
 ### Eksempel A: Sannsynlighetsfordeling som stolpediagram (SVG)
 

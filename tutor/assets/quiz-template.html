@@ -62,8 +62,11 @@
   - "numeric": answer = tall, tolerance = tillatt avvik, explanation = forklaring.
                Komma og punktum godtas som desimaltegn.
   topic brukes i oppsummeringen for å vise hva som sitter og hva som bør repeteres.
+  Bruk ett topic per deltema i leksjonen, så oppsummeringen viser resultat per deltema.
+  lang: "no" eller "en" styrer knappetekstene. Skriv spørsmålene på samme språk.
 */
 const QUIZ = {
+  lang: "no",
   title: "Poisson-fordeling",
   questions: [
     {
@@ -93,6 +96,17 @@ const QUIZ = {
   ]
 };
 
+const UI = {
+  no: { q: "Spørsmål", of: "av", next: "Neste spørsmål", result: "Se resultat", ok: "Riktig.",
+        bad: "Ikke helt.", right: "Riktig svar:", placeholder: "Ditt svar", answer: "Svar",
+        score: "Resultat", good: "Det sitter", review: "Bør repeteres", again: "Ta quizen på nytt" },
+  en: { q: "Question", of: "of", next: "Next question", result: "See result", ok: "Correct.",
+        bad: "Not quite.", right: "Correct answer:", placeholder: "Your answer", answer: "Answer",
+        score: "Score", good: "You've got this", review: "Worth reviewing", again: "Retake the quiz" },
+}[QUIZ.lang] || {};
+document.documentElement.lang = QUIZ.lang;
+document.title = QUIZ.title;
+
 const state = { i: 0, results: [] };
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, ...children) => {
@@ -110,19 +124,19 @@ function render() {
   if (state.i >= total) return renderSummary(root);
 
   const q = QUIZ.questions[state.i];
-  $("progress").textContent = `Spørsmål ${state.i + 1} av ${total}`;
+  $("progress").textContent = `${UI.q} ${state.i + 1} ${UI.of} ${total}`;
   root.append(el("div", { className: "question", textContent: q.question }));
   const feedback = el("div", { className: "feedback hidden" });
   const next = el("button", {
     className: "primary next hidden",
-    textContent: state.i + 1 < total ? "Neste spørsmål" : "Se resultat",
+    textContent: state.i + 1 < total ? UI.next : UI.result,
     onclick: () => { state.i++; render(); }
   });
 
   const finish = (correct, text) => {
-    state.results.push({ topic: q.topic || `Spørsmål ${state.i + 1}`, correct });
+    state.results.push({ topic: q.topic || `${UI.q} ${state.i + 1}`, correct });
     feedback.className = "feedback " + (correct ? "ok" : "bad");
-    feedback.textContent = (correct ? "Riktig. " : "Ikke helt. ") + text;
+    feedback.textContent = (correct ? UI.ok : UI.bad) + " " + text;
     next.classList.remove("hidden");
     next.focus();
   };
@@ -139,14 +153,14 @@ function render() {
         if (idx !== q.answer) b.classList.add("wrong");
         const right = q.options[q.answer];
         finish(idx === q.answer,
-          idx === q.answer ? o.feedback : `${o.feedback} Riktig svar: ${right.text}.`);
+          idx === q.answer ? o.feedback : `${o.feedback} ${UI.right} ${right.text}.`);
       };
       opts.append(b);
     });
     root.append(opts);
   } else {
-    const input = el("input", { type: "text", inputMode: "decimal", placeholder: "Ditt svar" });
-    const submit = el("button", { className: "primary", textContent: "Svar" });
+    const input = el("input", { type: "text", inputMode: "decimal", placeholder: UI.placeholder });
+    const submit = el("button", { className: "primary", textContent: UI.answer });
     const check = () => {
       const v = parseFloat(input.value.replace(",", "."));
       if (Number.isNaN(v)) { input.focus(); return; }
@@ -164,15 +178,23 @@ function render() {
 
 function renderSummary(root) {
   const score = state.results.filter((r) => r.correct).length;
-  $("progress").textContent = `Resultat: ${score} av ${state.results.length}`;
+  $("progress").textContent = `${UI.score}: ${score} ${UI.of} ${state.results.length}`;
+  // Slå sammen per deltema: et tema sitter bare hvis alle spørsmålene om det var riktige.
+  const topics = new Map();
+  state.results.forEach((r) => {
+    const t = topics.get(r.topic) || { right: 0, total: 0 };
+    t.total++; if (r.correct) t.right++;
+    topics.set(r.topic, t);
+  });
+  const entries = [...topics].map(([topic, t]) => ({ topic, ...t }));
   const list = (title, items) => items.length
     ? [el("h2", { textContent: title }), el("ul", { className: "summary" },
-        ...items.map((r) => el("li", { textContent: r.topic })))]
+        ...items.map((t) => el("li", { textContent: `${t.topic} (${t.right}/${t.total})` })))]
     : [];
   root.append(
-    ...list("Det sitter", state.results.filter((r) => r.correct)),
-    ...list("Bør repeteres", state.results.filter((r) => !r.correct)),
-    el("button", { className: "primary", textContent: "Ta quizen på nytt",
+    ...list(UI.good, entries.filter((t) => t.right === t.total)),
+    ...list(UI.review, entries.filter((t) => t.right < t.total)),
+    el("button", { className: "primary", textContent: UI.again,
       onclick: () => { state.i = 0; state.results = []; render(); } })
   );
 }

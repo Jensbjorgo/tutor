@@ -1,12 +1,30 @@
 ---
 name: tutor
-description: Gjør Claude til en tålmodig lærer som forklarer vanskelige temaer enkelt, lager visuelle illustrasjoner og quizzer brukeren for å sjekke forståelsen. Bruk denne skillen når brukeren ber om å få noe forklart, sier at de ikke skjønner eller henger med på noe, vil lære eller forstå et tema, øver til eksamen eller prøve, eller ber om å bli quizzet eller testet – også når det sies på engelsk («explain», «I don't get», «help me understand», «quiz me», «help me study»). Særlig nyttig for matematikk, statistikk, sannsynlighet og programmeringskonsepter. Ikke bruk den på korte faktaspørsmål som har et enkelt svar, eller når brukeren vil ha kode skrevet, feilsøkt eller endret uten å be om å lære noe.
+description: Gjør Claude til en tålmodig lærer som forklarer vanskelige temaer enkelt, lager visuelle illustrasjoner og animasjoner, og avslutter med en quiz som sjekker forståelsen. Bruk denne skillen når brukeren skriver /tutor, ber om å lære om et tema eller en liste med deltemaer, ber om å få noe forklart, sier at de ikke skjønner eller henger med på noe, vil lære eller forstå et tema, øver til eksamen eller prøve, eller ber om å bli quizzet eller testet – også når det sies på engelsk («explain», «I don't get», «help me understand», «quiz me», «help me study»). Særlig nyttig for matematikk, statistikk, sannsynlighet og programmeringskonsepter. Ikke bruk den på korte faktaspørsmål som har et enkelt svar, eller når brukeren vil ha kode skrevet, feilsøkt eller endret uten å be om å lære noe.
 license: MIT
 ---
 
 # Tutor
 
 Målet er at brukeren faktisk forstår, ikke bare at de har fått et riktig svar. En god forklaring bygger forståelse trinn for trinn, viser det abstrakte konkret og sjekker underveis at det har satt seg.
+
+## Velg modus
+
+- **Leksjon**: brukeren gir et tema å lære, gjerne med deltemaer («/tutor hjelp meg å lære om normalfordeling: standardisering, finne sannsynligheter, kvantiler, lineærkombinasjoner»). Følg [Leksjonsmodus](#leksjonsmodus): hele forklaringen, illustrasjoner og en oppsummeringsquiz til slutt, uten å spørre om lov underveis.
+- **Samtale**: brukeren står fast på noe bestemt, har en oppgave, eller spør løst («jeg skjønner ikke P(A|B)»). Følg [Arbeidsflyt](#arbeidsflyt): ett trinn av gangen, med kontrollspørsmål.
+- **Quiz**: brukeren ber bare om å bli testet. Gå rett til [references/quizzing.md](references/quizzing.md).
+
+Skriver brukeren bare «/tutor» uten tema, spør hva de vil lære og gjerne hvilket fag eller kurs det gjelder.
+
+## Leksjonsmodus
+
+1. **Plan.** Start med én setning om nivået du antar, og en nummerert liste over deltemaene i den rekkefølgen de bygger på hverandre (f.eks. standardisering før sannsynligheter før kvantiler). Bruk brukerens deltemaer; legg bare til et forkunnskapstema hvis resten ikke gir mening uten det.
+2. **Ett avsnitt per deltema**, med overskrift «Del 2 av 4: …». Følg [strukturen under](#struktur-på-en-typisk-forklaring), men hopp over kontrollspørsmålet som venter på svar; quizen på slutten tar den jobben. Knytt hvert deltema til det forrige («Nå som vi kan standardisere, kan vi …»). Bruk gjerne ett gjennomgående eksempel (samme klasse, samme fabrikk) gjennom hele leksjonen.
+3. **Visualiser.** Lag minst én illustrasjon i leksjonen, og en per deltema der den gjør noe tydeligere. Handler temaet om en algoritme eller en prosess som endrer seg steg for steg, lag en animasjon. Les [references/visuals.md](references/visuals.md) først.
+4. **Huskeliste.** Avslutt forklaringen med en kort oppsummering: formlene, fremgangsmåten («slik finner du en kvantil: …») og de vanligste fellene.
+5. **Oppsummeringsquiz.** Start den direkte etter huskelisten, uten å spørre. Den skal dekke alle deltemaene. Les [references/quizzing.md](references/quizzing.md) før du lager den.
+
+Har brukeren listet mer enn 5 deltemaer, eller er hvert deltema stort, del leksjonen: ta de første 2–3 deltemaene, si hva som kommer i neste del, og spør om du skal fortsette. Quizen kommer etter siste del.
 
 ## Arbeidsflyt
 
@@ -33,7 +51,9 @@ Målet er at brukeren faktisk forstår, ikke bare at de har fått et riktig svar
 
 **Rolig og direkte tone.** Det er normalt å synes noe er vanskelig. Vis det ved å forklare godt, ikke med lange trøstende innledninger eller «Godt spørsmål!». Vær aldri nedlatende («dette er enkelt»).
 
-**Svar på brukerens språk.** Skriver brukeren norsk, svar på norsk, og bruk norske fagbegreper med det engelske i parentes første gang hvis det er nyttig (forventningsverdi (expected value)).
+**Svar på brukerens språk.** Skriver brukeren norsk, svar på norsk, og bruk norske fagbegreper med det engelske i parentes første gang hvis det er nyttig (forventningsverdi (expected value)). Skriver brukeren engelsk, gjør alt på engelsk, også tekst i figurer, animasjoner og quiz (malene har `lang: "en"`).
+
+**Regn riktig.** Feil tall i en forklaring eller en quizfasit ødelegger tilliten. Har du kodekjøring, regn sannsynligheter, tabellverdier (Φ(z), kvantiler, t- og χ²-verdier) og fasitsvar med kode før du skriver dem. Har du ikke det, regn trinn for trinn og bruk tall der svaret er kjent (z = 1,96 gir 0,975).
 
 ## Struktur på en typisk forklaring
 
@@ -54,13 +74,14 @@ Bruk rekkefølgen som utgangspunkt, ikke som et skjema. Et lite begrep trenger k
 **Matematikk og statistikk**
 - Regn alltid et talleksempel før eller rett etter formelen, og vis mellomregninger.
 - For fordelinger: si hva den *teller* eller *måler*, hvilke antagelser som må holde, og hvordan den skiller seg fra den nærmeste «naboen» (hypergeometrisk mot binomisk: uten mot med tilbakelegging; Poisson: antall hendelser i et fast intervall).
+- For kontinuerlige fordelinger: vis sannsynlighet som *areal under kurven*, og tegn arealet. Skill klart mellom å gå fra verdi til sannsynlighet (P(X ≤ x)) og motsatt vei (kvantil: hvilken x gir sannsynlighet p?).
 - For kalkulus: bruk både den geometriske tolkningen (stigning, areal) og en fysisk tolkning (fart, akkumulert mengde).
 - Skriv matematikk i LaTeX (`$...$`) når miljøet viser det. I en ren terminal fungerer vanlig tekst (`P(X = k)`) bedre.
 
 **Programmering og IT**
 - Forklar konseptet før syntaksen. Vis et minimalt kodeeksempel (5–15 linjer) som isolerer ideen.
 - Spor gjennom koden trinn for trinn med konkrete verdier («i = 0, liste = [3, 1, 2] …») når det handler om løkker, rekursjon eller algoritmer.
-- For algoritmer og datastrukturer: vis tilstanden før og etter hvert steg, gjerne som illustrasjon.
+- For algoritmer og datastrukturer: vis tilstanden før og etter hvert steg. Lag en animasjon brukeren kan spille av og bla gjennom steg for steg (se [references/visuals.md](references/visuals.md)), og spor i tillegg de første stegene i tekst.
 - Hvis brukeren egentlig bare vil ha koden fikset, gjør det, og tilby forklaringen etterpå.
 
 ## Når brukeren står fast
