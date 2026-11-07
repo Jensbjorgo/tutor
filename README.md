@@ -8,6 +8,8 @@ En [Agent Skill](https://agentskills.io) som gjør Claude til en bedre lærer. S
 
 og Claude vil
 
+- **spørre kort i starten** hvis noe er uklart: hva er formålet (eksamen?), har du pensum den skal gå ut fra, og hvilket nivå
+- **tilby en fokustimer** med lengde du velger selv, og si fra når tiden er ute: godt jobbet, ta to minutter pause
 - **lage en plan** og gå gjennom deltemaene i **korte runder**, ett om gangen, med en kartlinje som viser hvor du er
 - **la deg gjette først**: hver runde starter med et lite problem du gjetter på før forklaringen kommer
 - **forklare enkelt**: korte setninger, intuisjon og et konkret eksempel først, formelen etterpå, med en «knagg» for hvert nytt begrep
@@ -38,12 +40,14 @@ Skillen trigges ikke på korte faktaspørsmål («hva er hovedstaden i Peru?») 
 tutor/
 ├── SKILL.md                    # Hovedinstruksjoner: pedagogikk og arbeidsflyt
 ├── references/
+│   ├── oppstart.md             # Oppstartsspørsmål (formål, pensum, nivå) og fokustimer
 │   ├── runder.md               # Korte runder: kartlinje, gjett, knagger, tempo, eksempel på en runde
 │   ├── visuals.md              # Illustrasjoner, animasjoner og fargekode
 │   └── quizzing.md             # Spørsmål underveis, quiz, tilbakemelding, repetisjon over tid
 └── assets/
     ├── quiz-template.html      # Interaktiv quiz med resultat per deltema (norsk/engelsk, lys/mørk modus)
-    └── animation-template.html # Steg-for-steg-animasjon av algoritmer (eksempel: boblesortering)
+    ├── animation-template.html # Steg-for-steg-animasjon av algoritmer (eksempel: boblesortering)
+    └── focus-timer.html        # Fokustimer med pause (norsk/engelsk, lys/mørk modus)
 ```
 
 ## Installasjon
@@ -72,7 +76,7 @@ Start Claude Code på nytt. Skriv `/tutor` etterfulgt av det du vil lære, f.eks
 
 ### Malene uten Claude
 
-`tutor/assets/quiz-template.html` og `tutor/assets/animation-template.html` kan åpnes direkte i nettleseren. Claude fyller dem med innhold, men du kan også redigere `QUIZ`- eller `ANIM`-objektet i filene selv.
+`tutor/assets/quiz-template.html`, `tutor/assets/animation-template.html` og `tutor/assets/focus-timer.html` kan åpnes direkte i nettleseren. Claude fyller dem med innhold, men du kan også redigere `QUIZ`-, `ANIM`- eller `TIMER`-objektet i filene selv.
 
 ## In English
 

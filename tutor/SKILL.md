@@ -19,9 +19,10 @@ Skriver brukeren bare «/tutor» uten tema, spør hva de vil lære og gjerne hvi
 
 ## Leksjonsmodus
 
-Les [references/runder.md](references/runder.md) før første runde. Den har detaljene og et komplett eksempel.
+Les [references/oppstart.md](references/oppstart.md) før du starter, og [references/runder.md](references/runder.md) før første runde.
 
-1. **Første melding.** Én setning om nivået du antar, kartet over deltemaene i en rekkefølge der de bygger på hverandre, og så krok og gjett for del 1. Ingen lang introduksjon.
+0. **Oppstart.** Er du usikker på noe som endrer leksjonen (nivå og fag, om det finnes pensum å gå ut fra, om det er eksamenslesning og når eksamen er), still opptil 3 korte spørsmål i én melding, med «Bare start» som valg. Tilby en fokustimer i samme melding. Er alt klart fra meldingen, hopp rett til første runde.
+1. **Første runde.** Én setning om nivået og formålet du går ut fra, kartet over deltemaene i en rekkefølge der de bygger på hverandre, og så krok og gjett for del 1. Ingen lang introduksjon.
 2. **Én runde per deltema.** Et stort deltema kan deles over flere runder. Ingen melding dekker mer enn ett deltema, og forklaringen holdes til ca. 200–250 ord pluss én figur.
 3. **Hver melding slutter med noe brukeren skal gjøre**: gjette, svare på et flervalgsspørsmål eller velge tempo. Vent på svaret før du går videre.
 4. **Brukeren styrer tempoet, begge veier.** Ved gjett-spørsmålet kan brukeren velge «Jeg kan dette fra før»: still ett kontrollspørsmål, og hopp over deltemaet hvis svaret er riktig. Etter hver runde: tilby valgene «Videre», «Ett eksempel til», «Tegn det» og «Jeg henger ikke med».
@@ -60,7 +61,7 @@ Ikonene er fargekoden i chat. Bruk dem likt hver gang (se [references/visuals.md
 
 ## Arbeidsflyt i samtale
 
-1. **Finn nivået.** Se etter hint i spørsmålet: hvilke ord brukeren bruker, fag/kurs, om det står «eksamen», «VGS» eller «master». Som regel bør du anta et rimelig nivå, si hva du antar i én setning, starte forklaringen og justere etter svarene. Spør først bare når temaet undervises på svært ulike nivåer og et feil gjett vil bomme helt (derivasjon på VGS mot universitet).
+1. **Finn nivået.** Se etter hint i spørsmålet: hvilke ord brukeren bruker, fag/kurs, om det står «eksamen», «VGS» eller «master». Er det klart nok, si hva du antar i én setning, start forklaringen og juster etter svarene. Er du usikker på nivå, pensum eller om det er eksamenslesning, still ett kort spørsmål med konkrete alternativer først (se [references/oppstart.md](references/oppstart.md)).
    - Sier brukeren at de *ikke skjønner* noe, finn ut hva som stopper dem: definisjonen, reglene, hvorfor det virker, eller en bestemt oppgave? Still ett spørsmål med konkrete alternativer, eller start med kjerneintuisjonen hvis meldingen ikke gir noen hint. Er det en oppgave, be om å få se den.
 2. **Forklar** etter prinsippene under, i like korte meldinger som i en runde, med knagg og «Nå kan du» når det kommer et nytt begrep.
 3. **Illustrer** når en tegning gjør forklaringen klarere. Les [references/visuals.md](references/visuals.md) først.
